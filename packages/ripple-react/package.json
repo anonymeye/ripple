@@ -1,6 +1,6 @@
 {
   "name": "@rplx/react",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "React bindings for Ripple state management",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -25,7 +25,7 @@
     "react": ">=16.8.0"
   },
   "dependencies": {
-    "@rplx/core": "file:../ripple"
+    "@rplx/core": "^0.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
@@ -53,4 +53,3 @@
     "access": "public"
   }
 }
-
