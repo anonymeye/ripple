@@ -110,7 +110,9 @@ export interface InterceptorContext<State, Cofx = {}> {
       },
       
       after: (context) => {
-        console.log('New State:', context.coeffects.db)
+        // Log the new state from effects.db if available (after path grafting), otherwise coeffects.db
+        const newState = context.effects.db !== undefined ? context.effects.db : context.coeffects.db
+        console.log('New State:', newState)
         console.log('Effects:', context.effects)
         console.groupEnd()
         return context
@@ -128,7 +130,9 @@ export interface InterceptorContext<State, Cofx = {}> {
       id: 'after',
       
       after: (context) => {
-        fn(context.coeffects.db, context.effects)
+        // Pass the new state from effects.db if available (after path grafting), otherwise coeffects.db
+        const newState = context.effects.db !== undefined ? context.effects.db : context.coeffects.db
+        fn(newState as State, context.effects)
         return context
       }
     }
@@ -168,7 +172,12 @@ export interface InterceptorContext<State, Cofx = {}> {
       id: 'validate',
       
       after: (context) => {
-        const result = schema(context.coeffects.db)
+        // Validate the final state that will be applied
+        // Use effects.db if available (after path grafting), otherwise coeffects.db
+        const stateToValidate = context.effects.db !== undefined 
+          ? context.effects.db 
+          : context.coeffects.db
+        const result = schema(stateToValidate as State)
         if (result !== true) {
           console.error('State validation failed:', result)
         }

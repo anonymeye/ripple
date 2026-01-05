@@ -11,6 +11,13 @@
     "build": "npm run build --workspaces",
     "dev": "npm run dev --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
+    "test": "npm run test --workspaces",
+    "test:core": "npm run test --workspace=@rplx/core",
+    "test:react": "npm run test --workspace=@rplx/react",
+    "test:angular": "npm run test --workspace=@rplx/angular",
+    "test:watch": "npm run test:watch --workspaces",
+    "test:coverage": "npm run test:coverage --workspaces",
+    "test:ci": "npm run test:coverage --workspaces -- --ci",
     "version": "changeset version",
     "release": "npm run build && changeset publish"
   },

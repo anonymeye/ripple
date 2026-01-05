@@ -34,6 +34,14 @@ export interface Router<State, Cofx> {
 }
 
 /**
+ * Extended queued event with promise resolution callbacks
+ */
+interface QueuedEventWithPromise extends QueuedEvent {
+    resolve: () => void
+    reject: (error: Error) => void
+}
+
+/**
  * Create a router instance
  */
 export function createRouter<State, Cofx>(
@@ -41,9 +49,10 @@ export function createRouter<State, Cofx>(
 ): Router<State, Cofx> {
     const { eventManager } = deps
 
-    // Event queue
-    const eventQueue: QueuedEvent[] = []
+    // Event queue with promise callbacks
+    const eventQueue: QueuedEventWithPromise[] = []
     let isProcessing = false
+    let processingPromise: Promise<void> | null = null
 
     /**
      * Process a single event
@@ -60,18 +69,32 @@ export function createRouter<State, Cofx>(
      * Process events from queue sequentially
      */
     async function processQueue(): Promise<void> {
+        // If already processing, the current loop will handle new events
         if (isProcessing) return
 
         isProcessing = true
-
-        try {
-            while (eventQueue.length > 0) {
-                const event = eventQueue.shift()!
-                await processEvent(event.eventKey, event.payload)
+        
+        const promise = (async () => {
+            try {
+                // Keep processing while there are events in the queue
+                // This handles events added during effect execution
+                while (eventQueue.length > 0) {
+                    const event = eventQueue.shift()!
+                    try {
+                        await processEvent(event.eventKey, event.payload)
+                        event.resolve()
+                    } catch (error) {
+                        event.reject(error instanceof Error ? error : new Error(String(error)))
+                    }
+                }
+            } finally {
+                isProcessing = false
+                processingPromise = null
             }
-        } finally {
-            isProcessing = false
-        }
+        })()
+        
+        processingPromise = promise
+        await promise
     }
 
     /**
@@ -83,23 +106,39 @@ export function createRouter<State, Cofx>(
         payload: Payload
     ): Promise<void> {
         return new Promise((resolve, reject) => {
-            // Add event to queue
-            eventQueue.push({ eventKey, payload })
+            // Add event to queue with promise callbacks
+            eventQueue.push({ 
+                eventKey, 
+                payload,
+                resolve,
+                reject
+            })
 
             // Start processing if not already processing
             if (!isProcessing) {
-                processQueue().then(resolve).catch(reject)
-            } else {
-                resolve()
+                processQueue().catch((error) => {
+                    // This should not happen as errors are handled per-event,
+                    // but log just in case
+                    console.error('Unexpected error in processQueue:', error)
+                })
             }
         })
     }
 
     /**
      * Flush the event queue immediately (for testing)
+     * Waits for current processing to complete and processes any remaining events
      */
     async function flush(): Promise<void> {
-        await processQueue()
+        // Wait for current processing to complete
+        if (processingPromise) {
+            await processingPromise
+        }
+        
+        // Process any remaining events in the queue
+        if (eventQueue.length > 0) {
+            await processQueue()
+        }
     }
 
     return {

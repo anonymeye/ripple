@@ -53,12 +53,14 @@ export const httpRequestEffect: EffectHandler<NonNullable<EffectMap['http-reques
 
     // Dispatch success event if provided
     if (config.onSuccess) {
-      await store.dispatch(config.onSuccess, { data: JSON.stringify(data) })
+      // Don't await - dispatch asynchronously to avoid deadlock
+      store.dispatch(config.onSuccess, { data: JSON.stringify(data) })
     }
   } catch (error) {
     // Dispatch error event if provided
     if (config.onError) {
-      await store.dispatch(config.onError, {
+      // Don't await - dispatch asynchronously to avoid deadlock
+      store.dispatch(config.onError, {
         error: error instanceof Error ? error.message : 'Unknown error',
       })
     }
@@ -69,7 +71,7 @@ export const httpRequestEffect: EffectHandler<NonNullable<EffectMap['http-reques
  * Local storage effect handler
  * Handles localStorage operations
  */
-export const localStorageEffect: EffectHandler<NonNullable<EffectMap['local-storage']>> = async (
+export const localStorageEffect: EffectHandler<NonNullable<EffectMap['local-storage']>> = (
   config,
   store
 ) => {
@@ -78,28 +80,32 @@ export const localStorageEffect: EffectHandler<NonNullable<EffectMap['local-stor
       case 'get': {
         const value = localStorage.getItem(config.key)
         if (config.onSuccess) {
-          await store.dispatch(config.onSuccess, { data: value })
+          // Don't await - dispatch asynchronously to avoid deadlock
+          store.dispatch(config.onSuccess, { data: value })
         }
         break
       }
       case 'set': {
         localStorage.setItem(config.key, JSON.stringify(config.value))
         if (config.onSuccess) {
-          await store.dispatch(config.onSuccess, { data: config.value })
+          // Don't await - dispatch asynchronously to avoid deadlock
+          store.dispatch(config.onSuccess, { data: config.value })
         }
         break
       }
       case 'remove': {
         localStorage.removeItem(config.key)
         if (config.onSuccess) {
-          await store.dispatch(config.onSuccess, {})
+          // Don't await - dispatch asynchronously to avoid deadlock
+          store.dispatch(config.onSuccess, {})
         }
         break
       }
     }
   } catch (error) {
     if (config.onError) {
-      await store.dispatch(config.onError, {
+      // Don't await - dispatch asynchronously to avoid deadlock
+      store.dispatch(config.onError, {
         error: error instanceof Error ? error.message : 'LocalStorage error',
       })
     }

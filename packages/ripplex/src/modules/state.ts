@@ -5,6 +5,12 @@
  * Handles state storage, retrieval, and batched change notifications
  */
 
+/**
+ * Scheduler function type for batching state change notifications
+ * Defaults to requestAnimationFrame, but can be injected for testing
+ */
+export type StateScheduler = (callback: FrameRequestCallback) => number
+
 export interface StateManager<State> {
   /**
    * Get the current state (read-only)
@@ -29,12 +35,14 @@ export interface StateManager<State> {
  * @param initialState - The initial state value
  * @param onStateChange - Optional callback when state changes (for framework integration)
  * @param onStateChangeForSubscriptions - Optional callback for subscription notifications
+ * @param scheduler - Optional scheduler function (defaults to requestAnimationFrame)
  * @returns A new StateManager instance
  */
 export function createStateManager<State>(
   initialState: State,
   onStateChange?: (state: State) => void,
-  onStateChangeForSubscriptions?: (state: State) => void
+  onStateChangeForSubscriptions?: (state: State) => void,
+  scheduler: StateScheduler = requestAnimationFrame
 ): StateManager<State> {
   // Internal state storage
   let state: State = initialState
@@ -46,7 +54,7 @@ export function createStateManager<State>(
   const scheduleNotification = (): void => {
     if (rafId !== null) return
 
-    rafId = requestAnimationFrame(() => {
+    rafId = scheduler(() => {
       rafId = null
 
       if (stateChanges.length > 0) {

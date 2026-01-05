@@ -103,6 +103,9 @@ export function createRegistrar(options?: { warnOnOverwrite?: boolean }): Regist
           } else {
             console.warn(`re-frame: can't clear ${kind} handler for ${id}. Handler not found.`)
           }
+        } else {
+          // Kind doesn't exist, warn about it
+          console.warn(`re-frame: can't clear ${kind} handler for ${id}. Handler not found.`)
         }
       }
     }

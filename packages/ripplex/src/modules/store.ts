@@ -124,7 +124,8 @@ export function createStore<State, Cofx = {}>(
             if (subscriptionManagerRef) {
                 subscriptionManagerRef.notifyListeners(state)
             }
-        }
+        },
+        config.__scheduler ?? requestAnimationFrame // Use scheduler if provided, otherwise default to RAF
     )
 
     // Create subscription manager (needs state manager and error handler)

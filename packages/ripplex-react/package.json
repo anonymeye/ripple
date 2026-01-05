@@ -19,7 +19,10 @@
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "peerDependencies": {
     "react": ">=16.8.0"
@@ -28,8 +31,16 @@
     "@rplx/core": "^0.2.0"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
+    "@types/jest": "^30.0.0",
     "@types/react": "^18.2.43",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
     "react": "^18.2.0",
+    "react-dom": "^18.3.1",
+    "ts-jest": "^29.4.6",
     "tsup": "^8.0.0",
     "typescript": "^5.2.2"
   },

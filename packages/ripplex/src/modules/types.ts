@@ -129,6 +129,12 @@ export interface StoreConfig<State, Cofx = {}> {
         enabled?: boolean
         debounceTime?: number
     }
+    /** 
+     * Optional scheduler for batching state updates
+     * Defaults to requestAnimationFrame
+     * @internal - For testing purposes only
+     */
+    __scheduler?: (callback: FrameRequestCallback) => number
 }
 
 /// Internal event queue type

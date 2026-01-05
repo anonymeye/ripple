@@ -212,24 +212,26 @@ export function createEffectExecutor<State>(
         })
 
         // :dispatch effect - dispatches a single event
-        registerEffect('dispatch', async (config: NonNullable<EffectMap['dispatch']>) => {
+        // Note: We don't await the dispatch to avoid deadlock when dispatching from within an event
+        registerEffect('dispatch', (config: NonNullable<EffectMap['dispatch']>) => {
             if (!config || typeof config.event !== 'string') {
                 console.error('re-frame: ignoring bad :dispatch value. Expected {event: string, payload: any}, but got:', config)
                 return
             }
-            await dispatch(config.event, config.payload)
+            dispatch(config.event, config.payload)
         })
 
         // :dispatch-n effect - dispatches multiple events
-        registerEffect('dispatch-n', async (configs: NonNullable<EffectMap['dispatch-n']>) => {
+        // Note: We don't await dispatches to avoid deadlock when dispatching from within an event
+        registerEffect('dispatch-n', (configs: NonNullable<EffectMap['dispatch-n']>) => {
             if (!Array.isArray(configs)) {
                 console.error('re-frame: ignoring bad :dispatch-n value. Expected an array, but got:', configs)
                 return
             }
-            // Add all to queue - they'll be processed sequentially
+            // Add all to queue - they'll be processed sequentially by the router
             for (const config of configs) {
                 if (config && config.event) {
-                    await dispatch(config.event, config.payload)
+                    dispatch(config.event, config.payload)
                 }
             }
         })
